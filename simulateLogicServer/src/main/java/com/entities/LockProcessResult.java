@@ -3,7 +3,7 @@ package com.entities;
 public class LockProcessResult {
 	
 	private String processId;
-	private Integer lockedByUserId;
+	private String lockedByUserId;
 	
 	private LockingProcessResult rc;
 
@@ -19,11 +19,13 @@ public class LockProcessResult {
 		this.processId = processId;
 	}
 
-	public Integer getLockedByUserId() {
+	
+
+	public String getLockedByUserId() {
 		return lockedByUserId;
 	}
 
-	public void setLockedByUserId(Integer lockedByUserId) {
+	public void setLockedByUserId(String lockedByUserId) {
 		this.lockedByUserId = lockedByUserId;
 	}
 

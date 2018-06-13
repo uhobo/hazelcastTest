@@ -15,9 +15,12 @@ public class ProcessLockManager {
 	private CacheService cacheService;
 	
 	
-	public LockProcessResult lockProcess(String processId, Integer userId) {
+	public LockProcessResult lockProcess(String processId, String userId) {
 		LockProcessResult lockingRs = new LockProcessResult(processId);
 		DistrbutedData distrbutedData = new DistrbutedData(TABLE_NAME, processId, userId);
+		
+	//	cacheService.lock(distrbutedData);
+		
 		//Insert if not exist
 		DistrbutedData existDistrbutedData = (DistrbutedData)cacheService.putIfAbsent(distrbutedData);
 		
@@ -27,8 +30,7 @@ public class ProcessLockManager {
 			return lockingRs;
 		}
 		//check if is it same userID than insert again for reset timeToLive
-		Integer existUserId = (Integer)existDistrbutedData.getData();
-		
+		String existUserId = (String)existDistrbutedData.getData();
 		
 		if(userId == existUserId) {
 			cacheService.set(existDistrbutedData);
@@ -38,26 +40,30 @@ public class ProcessLockManager {
 		}
 		lockingRs.setLockedByUserId(existUserId);
 		lockingRs.setRc(LockingProcessResult.ALREADY_LOCKED);
+		//cacheService.unlock(distrbutedData);
 		return lockingRs; 
+		
+	
 	}
 	
 	
-	public LockProcessResult unLockProcess(String processId, Integer userId) {
+	public LockProcessResult unLockProcess(String processId, String userId) {
 		
 		LockProcessResult lockingRs = new LockProcessResult(processId);
-		DistrbutedData distrbutedData = new DistrbutedData(TABLE_NAME, processId, userId);
-		Integer existUserId = (Integer)cacheService.get(TABLE_NAME, processId);
+		DistrbutedData distrbutedData = cacheService.get(TABLE_NAME, processId);
 		
-		if(existUserId == null) {
+		
+		if(distrbutedData == null) {
 			lockingRs.setRc(LockingProcessResult.UNLOCKED_KEY_NOT_EXIST);
 			return lockingRs;
 		}
 		
-		
-		if(existUserId == userId) {
+		String existUserId = (String)distrbutedData.getData();
+		if(existUserId.equals(userId)) {
 			cacheService.remove(distrbutedData.getTableName(), distrbutedData.getKey());
 			lockingRs.setLockedByUserId(existUserId);
 			lockingRs.setRc(LockingProcessResult.UNLOCKED_SUCCESS);
+			//cacheService.unlock(distrbutedData);
 			return lockingRs;
 		}
 		lockingRs.setLockedByUserId(existUserId);
@@ -65,5 +71,13 @@ public class ProcessLockManager {
 		return lockingRs;
 	}
 	
+	public void lock(String processId) {
+		DistrbutedData distrbutedData = new DistrbutedData(TABLE_NAME, processId, null);
+		cacheService.lock(distrbutedData);
+	}
+	public void unlock(String processId) {
+		DistrbutedData distrbutedData = new DistrbutedData(TABLE_NAME, processId, null);
+		cacheService.unlock(distrbutedData);
+	}
 	
 }

@@ -17,11 +17,11 @@ public class CacheService  {
 	 
 	 
 	 public Object put(DistrbutedData mapData){
-		 return instance.getMap(mapData.getTableName()).put(mapData.getKey(), mapData.getData(), mapData.getTimeToLiveMill(), TimeUnit.MILLISECONDS );
+		 return instance.getMap(mapData.getTableName()).put(mapData.getKey(), mapData, mapData.getTimeToLiveMill(), TimeUnit.MILLISECONDS );
 	 }
 	 
 	 public Object putIfAbsent(DistrbutedData mapData) {
-		return instance.getMap(mapData.getTableName()).putIfAbsent(mapData.getKey(), mapData.getData(), mapData.getTimeToLiveMill(), TimeUnit.MILLISECONDS );
+		return instance.getMap(mapData.getTableName()).putIfAbsent(mapData.getKey(), mapData, mapData.getTimeToLiveMill(), TimeUnit.MILLISECONDS );
 	 }
 	 
 	 /**
@@ -30,15 +30,26 @@ public class CacheService  {
 	  * @param mapData
 	  */
 	 public void set(DistrbutedData mapData) {
-		 instance.getMap(mapData.getTableName()).set(mapData.getKey(), mapData.getData(), mapData.getTimeToLiveMill(), TimeUnit.MILLISECONDS);
+		 instance.getMap(mapData.getTableName()).set(mapData.getKey(), mapData, mapData.getTimeToLiveMill(), TimeUnit.MILLISECONDS);
 	 }
 	 
-	 public Object get(String tableName, String key) {
-		 return instance.getMap(tableName).get(key);
+	 public DistrbutedData get(String tableName, String key) {
+		 return (DistrbutedData)instance.getMap(tableName).get(key);
 	 }
 	 
-	 public Object remove(String tableName, String key) {
-		 return instance.getMap(tableName).remove(key); 
+	 public DistrbutedData remove(String tableName, String key) {
+		 return (DistrbutedData)instance.getMap(tableName).remove(key); 
 	 }
+
+	public void lock(DistrbutedData distrbutedData) {
+		instance.getMap(distrbutedData.getTableName()).lock(distrbutedData.getKey());
+		
+	}
+	
+	public void unlock(DistrbutedData distrbutedData) {
+		
+		instance.getMap(distrbutedData.getTableName()).unlock(distrbutedData.getKey());
+		
+	}
 	 
 }

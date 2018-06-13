@@ -3,13 +3,43 @@ package com.entities;
 import java.io.Serializable;
 import java.util.Date;
 
-public class DistrbutedData {
+public class DistrbutedData implements Serializable{
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private String tableName;
 	private String key;
 	private Serializable data;
-	private long timeToLiveMill = 2 * 60 * 1000;
+	private long timeToLiveMill = 2 * 60 * 1000; //2 minutes
 	private Date insertTime;
+	private boolean lockEntry;
+	private long timeToLovck = 10 * 1000; //10 seconds
 	
+	
+	
+	
+	public long getTimeToLovck() {
+		return timeToLovck;
+	}
+
+
+	public void setTimeToLovck(long timeToLovck) {
+		this.timeToLovck = timeToLovck;
+	}
+
+
+	public boolean isLockEntry() {
+		return lockEntry;
+	}
+
+
+	public void setLockEntry(boolean lockEntry) {
+		this.lockEntry = lockEntry;
+	}
+
+
 	public DistrbutedData(String tableName, String key, Serializable data) {
 		this.tableName = tableName;
 		this.key = key;
