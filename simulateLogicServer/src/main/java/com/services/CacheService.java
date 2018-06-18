@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.entities.DistrbutedData;
+import com.hazelcast.config.Config;
+import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 
 @Service
@@ -14,7 +16,10 @@ public class CacheService  {
 
 	 @Autowired
 	 private HazelcastInstance instance;
-	 
+	 public void init() {
+		Config config = new Config("resources/hazelcast.xml");
+		instance = Hazelcast.newHazelcastInstance(config);
+	 }
 	 
 	 public Object put(DistrbutedData mapData){
 		 return instance.getMap(mapData.getTableName()).put(mapData.getKey(), mapData, mapData.getTimeToLiveMill(), TimeUnit.MILLISECONDS );
@@ -41,14 +46,14 @@ public class CacheService  {
 		 return (DistrbutedData)instance.getMap(tableName).remove(key); 
 	 }
 
-	public void lock(DistrbutedData distrbutedData) {
-		instance.getMap(distrbutedData.getTableName()).lock(distrbutedData.getKey());
+	public void lock(String tableName, String key) {
+		instance.getMap(tableName).lock(key);
 		
 	}
 	
-	public void unlock(DistrbutedData distrbutedData) {
+	public void unlock(String tableName, String key) {
 		
-		instance.getMap(distrbutedData.getTableName()).unlock(distrbutedData.getKey());
+		instance.getMap(tableName).unlock(key);
 		
 	}
 	 

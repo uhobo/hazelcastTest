@@ -32,22 +32,35 @@ public class MainController {
 	 
 	 @RequestMapping("/getProcess")
 	public LockProcessResult getProcess(@RequestParam(value="processId") String processId, @RequestParam(value="userId") String userId) {
-		 LockProcessResult lockProcessResult = processLockManager.lockProcess(processId, userId);
+		 
 		 //ProcessInstance processInstance = processService.getProcess(processId, userId);
 		 try {
+			 processLockManager.lockServerLevel(processId);
+			 LockProcessResult lockProcessResult = processLockManager.lockSessionLevel(processId, userId);
 			Thread.sleep(2000);
+			System.out.println(String.format("UserId %d : Locking proccess %s result %s lockBy %d", userId, processId, lockProcessResult.getRc(), lockProcessResult.getLockedByUserId() ));
+			return lockProcessResult;
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}finally {
+			processLockManager.unlockServerLevel(processId);
+			
 		}
-		 System.out.println(String.format("UserId %d : Locking proccess %s result %s lockBy %d", userId, processId, lockProcessResult.getRc(), lockProcessResult.getLockedByUserId() ));
-		 return lockProcessResult;
+		return null;
 	}
 	 @RequestMapping("/releaseProcess")
 	public LockProcessResult releaseProcess(@RequestParam(value="processId") String processId, @RequestParam(value="userId") String userId) {
-		 LockProcessResult lockProcessResult =  processLockManager.unLockProcess(processId, userId);
-		 System.out.println(String.format("UserId %d : Locking proccess %s result %s lockBy %d", userId, processId, lockProcessResult.getRc(), lockProcessResult.getLockedByUserId() ));
-		 return lockProcessResult;
+		 
+		 try {
+			 processLockManager.lockServerLevel(processId);
+			 LockProcessResult lockProcessResult =  processLockManager.unLockSessionLevel(processId, userId);
+			 System.out.println(String.format("UserId %d : Locking proccess %s result %s lockBy %d", userId, processId, lockProcessResult.getRc(), lockProcessResult.getLockedByUserId() ));
+			 return lockProcessResult;
+		 }finally {
+			 processLockManager.unlockServerLevel(processId);
+		 }
+		 
 	}
 	
 }

@@ -6,7 +6,8 @@ public class LockProcessResult {
 	private String lockedByUserId;
 	
 	private LockingProcessResult rc;
-
+	private DistrbutedData distrbutedData;
+	
 	public LockProcessResult(String processId) {
 		this.processId = processId;
 	}
@@ -35,6 +36,14 @@ public class LockProcessResult {
 
 	public void setRc(LockingProcessResult rc) {
 		this.rc = rc;
+	}
+
+	public DistrbutedData getDistrbutedData() {
+		return distrbutedData;
+	}
+
+	public void setDistrbutedData(DistrbutedData distrbutedData) {
+		this.distrbutedData = distrbutedData;
 	}
 	
 	

@@ -14,12 +14,11 @@ public class ProcessLockManager {
 	@Autowired
 	private CacheService cacheService;
 	
-	
-	public LockProcessResult lockProcess(String processId, String userId) {
-		LockProcessResult lockingRs = new LockProcessResult(processId);
+
+
+	public LockProcessResult lockSessionLevel(String processId, String userId) {
 		DistrbutedData distrbutedData = new DistrbutedData(TABLE_NAME, processId, userId);
-		
-	//	cacheService.lock(distrbutedData);
+		LockProcessResult lockingRs = new LockProcessResult(distrbutedData.getKey());
 		
 		//Insert if not exist
 		DistrbutedData existDistrbutedData = (DistrbutedData)cacheService.putIfAbsent(distrbutedData);
@@ -32,7 +31,7 @@ public class ProcessLockManager {
 		//check if is it same userID than insert again for reset timeToLive
 		String existUserId = (String)existDistrbutedData.getData();
 		
-		if(userId == existUserId) {
+		if(userId.equals(existUserId)) {
 			cacheService.set(existDistrbutedData);
 			lockingRs.setLockedByUserId(userId);
 			lockingRs.setRc(LockingProcessResult.CONT_SUCCESS);
@@ -40,14 +39,11 @@ public class ProcessLockManager {
 		}
 		lockingRs.setLockedByUserId(existUserId);
 		lockingRs.setRc(LockingProcessResult.ALREADY_LOCKED);
-		//cacheService.unlock(distrbutedData);
-		return lockingRs; 
-		
-	
+		return lockingRs;
 	}
 	
 	
-	public LockProcessResult unLockProcess(String processId, String userId) {
+	public LockProcessResult unLockSessionLevel(String processId, String userId) {
 		
 		LockProcessResult lockingRs = new LockProcessResult(processId);
 		DistrbutedData distrbutedData = cacheService.get(TABLE_NAME, processId);
@@ -63,7 +59,6 @@ public class ProcessLockManager {
 			cacheService.remove(distrbutedData.getTableName(), distrbutedData.getKey());
 			lockingRs.setLockedByUserId(existUserId);
 			lockingRs.setRc(LockingProcessResult.UNLOCKED_SUCCESS);
-			//cacheService.unlock(distrbutedData);
 			return lockingRs;
 		}
 		lockingRs.setLockedByUserId(existUserId);
@@ -71,13 +66,11 @@ public class ProcessLockManager {
 		return lockingRs;
 	}
 	
-	public void lock(String processId) {
-		DistrbutedData distrbutedData = new DistrbutedData(TABLE_NAME, processId, null);
-		cacheService.lock(distrbutedData);
+	public void lockServerLevel(String processId) {
+		cacheService.lock(TABLE_NAME, processId);
 	}
-	public void unlock(String processId) {
-		DistrbutedData distrbutedData = new DistrbutedData(TABLE_NAME, processId, null);
-		cacheService.unlock(distrbutedData);
+	public void unlockServerLevel(String processId) {
+		cacheService.unlock(TABLE_NAME, processId);
 	}
 	
 }
