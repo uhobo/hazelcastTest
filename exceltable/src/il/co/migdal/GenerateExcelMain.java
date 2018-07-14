@@ -1,14 +1,16 @@
 package il.co.migdal;
 
-import java.io.FileNotFoundException;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
 
+import org.apache.commons.codec.binary.StringUtils;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.CreationHelper;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Row;
@@ -21,17 +23,15 @@ import il.co.migdal.beans.ExcelTableRow;
 
 public class GenerateExcelMain {
 
-	private static String[] columns = {"שם", "משפחה", "תאריך לידה", "משכורת"};
-	
-	
+	//private static String[] columns = {"שם", "משפחה", "תאריך לידה", "משכורת"};
 	
 	
 	public static void main(String[] args) {
-		ExcelDataTable dataTable = initData();
+		//ExcelDataTable dataTable = initData();
 		try {
+			addRowToTable();
 			
-			
-			generateTable(dataTable);
+			//generateTable(dataTable);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -39,15 +39,79 @@ public class GenerateExcelMain {
 	}
 	
 	
+	private static void addRowToTable() throws IOException {
+		FileInputStream file = new FileInputStream(new File("d:/temp/template.xlsx"));
+		Workbook workbook = new XSSFWorkbook(file);
+		Sheet sheet = workbook.getSheetAt(0);
+		Row dataRow = null;
+	
+		for (Row row : sheet) {
+			
+			dataRow = findTheStartRowData(row);
+			if(dataRow != null) {
+				break;
+			}
+		}
+		
+		if(dataRow == null) {
+			return;
+		}
+		Integer startRowIndex = dataRow.getRowNum();
+		CellStyle  cellStyle = dataRow.getRowStyle();
+		for(int i=startRowIndex; i < startRowIndex+ 5; i++) {
+			sheet.shiftRows(i,  i+ 1, 1);
+			Row newRow = fillRowdata(sheet, dataRow);
+			newRow.setRowStyle(cellStyle);
+		}
+		
+		
+		sheet.removeRow(dataRow);
+		
+		
+		Date date = new Date();
+		 FileOutputStream fileOut = new FileOutputStream("D:\\temp\\" + date.getTime() +".xlsx");
+	     workbook.write(fileOut);
+	     fileOut.close();
+
+	     // Closing the workbook
+	     workbook.close();
+	}
+	
+	private static Row fillRowdata(Sheet sheet, Row dataRow) {
+		Row newRow = sheet.createRow(dataRow.getRowNum()-1);
+		
+		for (Cell cell : dataRow) {
+			Cell newcell =newRow.createCell(cell.getColumnIndex());
+			newcell.setCellValue("temp");
+			newcell.setCellStyle(cell.getCellStyle());
+		}
+		return newRow;
+	}
+
+
+	private static Row findTheStartRowData(Row row ) {
+		for (Cell cell : row) {
+			if(cell.getCellTypeEnum() != CellType.STRING) {
+				continue;
+				
+			 }
+			if(StringUtils.equals(cell.getStringCellValue(), "<startHere>")) {
+				return row;
+			}
+		}
+		return null;
+	}
+	
+	
 	private static ExcelDataTable initData() {
 		ExcelDataTable dataTable = new ExcelDataTable();
-		 
-        for(int i = 0; i < columns.length; i++) {
-        	dataTable.getColumnHeaders().add(columns[i]);
-        }
+//		 
+//        for(int i = 0; i < columns.length; i++) {
+//        	dataTable.getColumnHeaders().add(columns[i]);
+//        }
         ExcelTableRow excelTableRow = new ExcelTableRow();
-        excelTableRow.getRowDataList().add("רוני");
-        excelTableRow.getRowDataList().add("גלר"); 
+  //      excelTableRow.getRowDataList().add("רוני");
+  //      excelTableRow.getRowDataList().add("גלר"); 
         excelTableRow.getRowDataList().add(new Date());
         excelTableRow.getRowDataList().add(Double.parseDouble("1005.34"));
         dataTable.getRowDataList().add(excelTableRow);
